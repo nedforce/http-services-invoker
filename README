@@ -1,0 +1,43 @@
+= ServiceInvoker
+
+A plugin for accessing web services over http. To Invoke a Web service you create a stub with a request builder and a set of response processors. Request builders are responsible for generating the HTTP request from a set of parameters. Response processors are responsible for retrieving protocol-specific data from the HTTP response. 
+
+Several request builders and response processors are included in this plugin. It includes request builders for xmlrpc and basic (rest-full) requests. It also contains response processors for files, json, xml and xmlrpc responses. Request builders and response processors for SOAP are also included, but these are less easy to use.
+
+== Example
+
+Accessing a rest-full resource (Google Search's API):
+
+	class GoogleSearchConsumer < ServiceInvoker::Base
+	  request_builder BasicBuilder, 
+	    :endpoint_url => "http://www.google.com/uds/GwebSearch",
+	    :default_get_params => {
+	      "hl" =>	"en",
+	      "key" => "<YOUR API KEY>",
+	      "v" => "1.0"
+	      }
+  
+	  response_module JSONProcessing
+	end
+
+Then try 
+
+	puts GoogleSearchConsumer.invoke(:url_params => {"q" => 'ruby'}).unmarshal_json
+
+Accessing an xml-rpc resource (Flickr's XML-RPC API):
+
+	class FlickrConsumer < ServiceInvoker::Base
+	  request_builder XMLRPCBuilder, 
+	    :endpoint_url => "api.flickr.com/services/xmlrpc/"
+  
+	  response_module XMLRPCProcessing
+	  response_module XMLProcessing
+	end
+
+Than do something like
+
+	Struct.new('EchoStruct', :api_key, :name, :name2)
+	FlickrConsumer.invoke(:name => 'flickr.test.echo', :args =>
+	 	[Struct::EchoStruct.new('<YOUR API KEY>', 'value', 'value2')])
+
+Copyright (c) 2008 Nedforce Informatica Specialisten B.V., released under the MIT license
